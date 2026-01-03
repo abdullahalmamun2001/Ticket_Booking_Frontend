@@ -1,0 +1,51 @@
+import React, { useState } from "react";
+import toast from "react-hot-toast";
+
+const AdvertiseToggle = ({ ticketId, isAdvertised, onStatusChange }) => {
+  const [loading, setLoading] = useState(false);
+  const [advertised, setAdvertised] = useState(isAdvertised);
+
+  const backendUrl=import.meta.env.VITE_BACKEND_URL;
+  console.log(backendUrl);
+
+  const handleToggle = async () => {
+    setLoading(true);
+    try {
+ 
+      const res = await fetch(`${backendUrl}/tickets/${ticketId}/advertise`, {
+        method: "PATCH", 
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ advertise: !advertised }),
+      });
+      console.log(res);
+
+      if (!res.ok) throw new Error("Failed to update advertise status");
+
+      setAdvertised(advertised);
+      toast.success(`Ticket ${!advertised ? "advertised" : "unadvertised"} successfully!`);
+
+      if (onStatusChange) onStatusChange(ticketId, !advertised);
+    } catch (err) {
+      console.error(err);
+      toast.error(err.message || "Action failed");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <button
+      className={`px-3 py-1 rounded ${
+        advertised ? "bg-green-500 text-white" : "bg-gray-300 text-black"
+      }`}
+      onClick={handleToggle}
+      disabled={loading}
+    >
+      {loading ? "Updating..." : advertised ? "Advertised" : "Advertise"}
+    </button>
+  );
+};
+
+export default AdvertiseToggle;
+
+
